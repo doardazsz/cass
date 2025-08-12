@@ -1,78 +1,66 @@
-import json
 import os
 
-# Arquivo onde serão salvos os dados
-ARQUIVO_DADOS = "gastos.json"
+saldo = 0.0
+gastos = []
 
-# Função para carregar dados existentes
-def carregar_dados():
-    if os.path.exists(ARQUIVO_DADOS):
-        with open(ARQUIVO_DADOS, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {"saldo": 0, "gastos": []}
+def limpar_tela():
+    os.system("cls" if os.name == "nt" else "clear")
 
-# Função para salvar dados
-def salvar_dados(dados):
-    with open(ARQUIVO_DADOS, "w", encoding="utf-8") as f:
-        json.dump(dados, f, indent=4, ensure_ascii=False)
-
-# Função para registrar gasto
-def registrar_gasto():
-    descricao = input("Descrição do gasto: ")
-    valor = float(input("Valor do gasto (R$): "))
-    dados["gastos"].append({"descricao": descricao, "valor": valor})
-    dados["saldo"] -= valor
-    salvar_dados(dados)
-    print("💸 Gasto registrado com sucesso!\n")
-
-# Função para adicionar salário
 def adicionar_salario():
-    valor = float(input("Valor do salário (R$): "))
-    dados["saldo"] += valor
-    salvar_dados(dados)
-    print("💰 Salário adicionado com sucesso!\n")
+    global saldo
+    try:
+        valor = float(input("Digite o valor do seu salário: R$ "))
+        saldo += valor
+        print(f"✅ Salário de R$ {valor:.2f} adicionado com sucesso!")
+    except ValueError:
+        print("❌ Valor inválido.")
 
-# Função para mostrar saldo
+def registrar_gasto():
+    global saldo, gastos
+    try:
+        descricao = input("Digite a descrição do gasto: ")
+        valor = float(input("Digite o valor do gasto: R$ "))
+        if valor > saldo:
+            print("⚠️ Saldo insuficiente para esse gasto!")
+        else:
+            saldo -= valor
+            gastos.append((descricao, valor))
+            print(f"✅ Gasto '{descricao}' de R$ {valor:.2f} registrado!")
+    except ValueError:
+        print("❌ Valor inválido.")
+
 def mostrar_saldo():
-    print(f"💼 Saldo atual: R$ {dados['saldo']:.2f}")
-    if dados["saldo"] < 100:
-        print("⚠️ Cuidado! Seu saldo está baixo, evite gastos desnecessários.")
-    elif dados["saldo"] > 500:
-        print("✅ Ótimo! Continue economizando para seus objetivos.")
-    print()
-
-# Função para listar gastos
-def listar_gastos():
-    if not dados["gastos"]:
-        print("Nenhum gasto registrado.\n")
-        return
-    print("📋 Lista de gastos:")
-    for gasto in dados["gastos"]:
-        print(f"- {gasto['descricao']}: R$ {gasto['valor']:.2f}")
-    print()
-
-# Programa principal
-dados = carregar_dados()
-
-while True:
-    print("=== Controle de Gastos ===")
-    print("1. Adicionar salário")
-    print("2. Registrar gasto")
-    print("3. Mostrar saldo")
-    print("4. Listar gastos")
-    print("5. Sair")
-    opcao = input("Escolha uma opção: ")
-
-    if opcao == "1":
-        adicionar_salario()
-    elif opcao == "2":
-        registrar_gasto()
-    elif opcao == "3":
-        mostrar_saldo()
-    elif opcao == "4":
-        listar_gastos()
-    elif opcao == "5":
-        print("Saindo... Até mais! 👋")
-        break
+    print(f"💰 Saldo atual: R$ {saldo:.2f}")
+    if gastos:
+        print("\n📜 Lista de gastos:")
+        for i, (desc, val) in enumerate(gastos, start=1):
+            print(f"{i}. {desc} - R$ {val:.2f}")
     else:
-        print("Opção inválida. Tente novamente.\n")
+        print("Nenhum gasto registrado ainda.")
+
+def menu():
+    while True:
+        print("\n=== Controle de Gastos ===")
+        print("1 - Adicionar salário")
+        print("2 - Registrar gasto")
+        print("3 - Mostrar saldo e gastos")
+        print("4 - Sair")
+        opcao = input("Escolha uma opção: ")
+
+        if opcao == "1":
+            adicionar_salario()
+        elif opcao == "2":
+            registrar_gasto()
+        elif opcao == "3":
+            mostrar_saldo()
+        elif opcao == "4":
+            print("👋 Saindo... Até logo!")
+            break
+        else:
+            print("❌ Opção inválida!")
+
+        input("\nPressione ENTER para continuar...")
+        limpar_tela()
+
+if __name__ == "__main__":
+    menu()
