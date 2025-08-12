@@ -1,66 +1,68 @@
+import requests
 import os
+import sys
+import time
 
-saldo = 0.0
-gastos = []
+# URL do seu arquivo no GitHub
+REPO_URL = "https://raw.githubusercontent.com/doardazsz/cass/main/app_controle_gastos.py"
 
-def limpar_tela():
-    os.system("cls" if os.name == "nt" else "clear")
-
-def adicionar_salario():
-    global saldo
+def atualizar():
     try:
-        valor = float(input("Digite o valor do seu salário: R$ "))
-        saldo += valor
-        print(f"✅ Salário de R$ {valor:.2f} adicionado com sucesso!")
-    except ValueError:
-        print("❌ Valor inválido.")
+        print("🔄 Verificando atualizações...")
+        r = requests.get(REPO_URL)
+        if r.status_code == 200:
+            novo_codigo = r.text
+            arquivo_atual = sys.argv[0]
+            # Se for executável, atualiza o .py local que ele usa
+            if arquivo_atual.endswith(".exe"):
+                py_local = os.path.splitext(arquivo_atual)[0] + ".py"
+            else:
+                py_local = arquivo_atual
 
-def registrar_gasto():
-    global saldo, gastos
-    try:
-        descricao = input("Digite a descrição do gasto: ")
-        valor = float(input("Digite o valor do gasto: R$ "))
-        if valor > saldo:
-            print("⚠️ Saldo insuficiente para esse gasto!")
+            # Lê o código atual
+            with open(py_local, "r", encoding="utf-8") as f:
+                codigo_atual = f.read()
+
+            # Só atualiza se for diferente
+            if codigo_atual != novo_codigo:
+                with open(py_local, "w", encoding="utf-8") as f:
+                    f.write(novo_codigo)
+                print("✅ Aplicativo atualizado! Reinicie para usar a nova versão.")
+                time.sleep(2)
+                sys.exit()
+            else:
+                print("✅ Já está na versão mais recente.")
         else:
-            saldo -= valor
-            gastos.append((descricao, valor))
-            print(f"✅ Gasto '{descricao}' de R$ {valor:.2f} registrado!")
-    except ValueError:
-        print("❌ Valor inválido.")
+            print("⚠ Não foi possível verificar atualização (erro no servidor).")
+    except Exception as e:
+        print(f"⚠ Erro ao atualizar: {e}")
 
-def mostrar_saldo():
-    print(f"💰 Saldo atual: R$ {saldo:.2f}")
-    if gastos:
-        print("\n📜 Lista de gastos:")
-        for i, (desc, val) in enumerate(gastos, start=1):
-            print(f"{i}. {desc} - R$ {val:.2f}")
-    else:
-        print("Nenhum gasto registrado ainda.")
+# --- Chama o sistema de atualização ---
+atualizar()
 
+# --- Daqui pra baixo vai o seu aplicativo ---
 def menu():
+    saldo = 0
     while True:
-        print("\n=== Controle de Gastos ===")
-        print("1 - Adicionar salário")
-        print("2 - Registrar gasto")
-        print("3 - Mostrar saldo e gastos")
-        print("4 - Sair")
-        opcao = input("Escolha uma opção: ")
+        print("\n--- Controle de Gastos ---")
+        print("1. Adicionar salário")
+        print("2. Adicionar gasto")
+        print("3. Ver saldo")
+        print("4. Sair")
+
+        opcao = input("Escolha: ")
 
         if opcao == "1":
-            adicionar_salario()
+            valor = float(input("Digite o salário: R$ "))
+            saldo += valor
         elif opcao == "2":
-            registrar_gasto()
+            valor = float(input("Digite o gasto: R$ "))
+            saldo -= valor
         elif opcao == "3":
-            mostrar_saldo()
+            print(f"Saldo atual: R$ {saldo:.2f}")
         elif opcao == "4":
-            print("👋 Saindo... Até logo!")
             break
         else:
-            print("❌ Opção inválida!")
+            print("Opção inválida.")
 
-        input("\nPressione ENTER para continuar...")
-        limpar_tela()
-
-if __name__ == "__main__":
-    menu()
+menu()
