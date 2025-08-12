@@ -1,0 +1,33 @@
+name: Build EXE
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Baixar código
+      uses: actions/checkout@v3
+
+    - name: Instalar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Instalar dependências
+      run: |
+        pip install pyinstaller
+
+    - name: Criar executável
+      run: |
+        pyinstaller --onefile app_controle_gastos.py
+
+    - name: Upload do executável
+      uses: actions/upload-artifact@v3
+      with:
+        name: app-controle-gastos
+        path: dist/app_controle_gastos.exe
