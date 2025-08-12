@@ -2,12 +2,11 @@ import ttkbootstrap as tb
 from ttkbootstrap.constants import *
 from tkinter import messagebox
 import json, os
-from datetime import datetime
 import matplotlib.pyplot as plt
 
 DATA_FILE = "gastos.json"
 
-# Funções de dados
+# --- Funções de dados ---
 def carregar_dados():
     if os.path.exists(DATA_FILE):
         try:
@@ -32,7 +31,15 @@ def salvar_dados():
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(dados, f, indent=2, ensure_ascii=False)
 
-# Funções do app
+# --- Iniciar dados ---
+dados = carregar_dados()
+
+# --- Criar janela principal ---
+app = tb.Window(themename="darkly")
+app.title("💰 Controle de Gastos")
+app.geometry("850x600")
+
+# --- Funções principais ---
 def registrar_gasto():
     cat = combo_categoria.get()
     try:
@@ -81,25 +88,7 @@ def mostrar_grafico():
     plt.tight_layout()
     plt.show()
 
-def conselho():
-    total = sum(dados["gastos"].values())
-    if total == 0:
-        msg = "Comece registrando gastos e guardando parte do que sobra."
-    elif total > sum(dados["limites"].values()):
-        msg = "Você está gastando mais do que o planejado. Corte supérfluos."
-    else:
-        msg = "Bom controle! Continue assim e aumente sua economia."
-    messagebox.showinfo("Conselho", msg)
-
-# Dados
-dados = carregar_dados()
-
-# Interface ttkbootstrap (tema darkly)
-app = tb.Window(themename="darkly")
-app.title("💰 Controle de Gastos")
-app.geometry("800x560")
-
-# Topo
+# --- Painel superior ---
 frame_top = tb.Frame(app, padding=10)
 frame_top.pack(fill=X)
 
@@ -112,24 +101,6 @@ tb.Label(frame_top, text="Valor R$:").pack(side=LEFT, padx=5)
 entry_valor = tb.Entry(frame_top, width=12)
 entry_valor.pack(side=LEFT, padx=5)
 
-tb.Button(frame_top, text="Registrar", bootstyle=SUCCESS, command=registrar_gasto).pack(side=LEFT, padx=5)
-tb.Button(frame_top, text="Gráfico", bootstyle=INFO, command=mostrar_grafico).pack(side=LEFT, padx=5)
-tb.Button(frame_top, text="Conselho", bootstyle=WARNING, command=conselho).pack(side=LEFT, padx=5)
-
-# Tabela
-cols = ("Categoria", "Limite", "Gasto", "Restante")
-tree = tb.Treeview(app, columns=cols, show="headings", height=15, bootstyle=PRIMARY)
-for c in cols:
-    tree.heading(c, text=c)
-    tree.column(c, anchor="center", width=150)
-tree.pack(fill=BOTH, expand=True, padx=10, pady=10)
-
-# Rodapé
-frame_footer = tb.Frame(app, padding=10)
-frame_footer.pack(fill=X)
-tb.Button(frame_footer, text="Editar limites", bootstyle=SECONDARY, command=lambda: messagebox.showinfo("Em breve", "Editor avançado")).pack(side=LEFT, padx=5)
-tb.Button(frame_footer, text="Salvar", bootstyle=SUCCESS, command=salvar_dados).pack(side=RIGHT, padx=5)
-
-# Inicializa
-atualizar_tabela()
-app.mainloop()
+tb.Button(frame_top, text="💰 Registrar", bootstyle=SUCCESS, command=registrar_gasto).pack(side=LEFT, padx=5)
+tb.Button(frame_top, text="📊 Gráfico", bootstyle=INFO, command=mostrar_grafico).pack(side=LEFT, padx=5)
+tb.Button(frame_top, text="💡 Conselho", bootstyle=WARNING, command=lambda: messagebox.showinfo("Conselho", "Em breve IA básica")).pack(side=LEFT, padx=5)
